@@ -4,10 +4,16 @@ const client = new Client("postgres://localhost:5432/juicebox-dev");
 
 // client.connect().then(() => console.log('connected to juicebox-dev'));
 
+const bcrypt = require("bcrypt");
+const saltRounds = 10;
+
 /*************** ONLY USERS GO HERE ***************/
 
 const createUsers = async ({ username, password, name, location }) => {
   try {
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    // console.log("I AM HASHED POTATOES", hashedPassword);
+
     const {
       rows: [user],
     } = await client.query(
@@ -17,7 +23,7 @@ const createUsers = async ({ username, password, name, location }) => {
         ON CONFLICT (username) DO NOTHING
         RETURNING *;
         `,
-      [username, password, name, location]
+      [username, hashedPassword, name, location]
     );
 
     return user;
